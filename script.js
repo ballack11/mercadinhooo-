@@ -5,12 +5,20 @@ const WHATSAPP_NUMBER = "558183173613";
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1580915411954-282cb1b0d780?auto=format&fit=crop&w=900&q=70";
 
-// ✅ BASE_PATH automático (funciona local e no GitHub Pages)
-const BASE_PATH = new URL("./", document.baseURI).pathname;
+// ✅ Cache-buster (mude esse valor quando trocar imagens)
+const IMG_VERSION = "v=2026-01-06-01";
 
-// Imagens por SKU
-function imgBySku(sku) {
-  return `${BASE_PATH}assets/images/${sku}.jpg`;
+// ✅ BASE_PATH automático:
+// - No GitHub Pages: "/mercadinhooo-/"
+// - No PC (file:// ou localhost): "./"
+const REPO_NAME = "mercadinhooo-";
+const BASE_PATH = (location.hostname.includes("github.io") || location.pathname.includes(`/${REPO_NAME}/`))
+  ? `/${REPO_NAME}/`
+  : "./";
+
+// ✅ Monta URL da imagem por SKU
+function imgBySku(sku, ext = "jpg") {
+  return `${BASE_PATH}assets/images/${sku}.${ext}?${IMG_VERSION}`;
 }
 
 // =========================
@@ -168,30 +176,32 @@ function setAllZapLinks() {
 }
 
 function getCategorias() {
-  const cats = Array.from(new Set(PRODUTOS.map(p => p.categoria)));
+  const cats = Array.from(new Set(PRODUTOS.map((p) => p.categoria)));
   return ["Todas", ...cats];
 }
 
 function montarSelectCategorias() {
   $categoria.innerHTML = getCategorias()
-    .map(c => `<option value="${c}">${c}</option>`)
+    .map((c) => `<option value="${c}">${c}</option>`)
     .join("");
 }
 
 function montarCardsCategorias() {
-  const cats = getCategorias().filter(c => c !== "Todas");
+  const cats = getCategorias().filter((c) => c !== "Todas");
   const icons = {
-    "Mercearia": "🛒",
-    "Hortifruti": "🥬",
-    "Limpeza": "🧼",
-    "Higiene": "🧴",
+    Mercearia: "🛒",
+    Hortifruti: "🥬",
+    Limpeza: "🧼",
+    Higiene: "🧴",
     "Laticínios": "🥛",
-    "Carnes": "🥩",
-    "Congelados": "🧊",
-    "Bebidas": "🍺",
+    Carnes: "🥩",
+    Congelados: "🧊",
+    Bebidas: "🍺",
   };
 
-  $cats.innerHTML = cats.map(c => `
+  $cats.innerHTML = cats
+    .map(
+      (c) => `
     <button
       class="text-left rounded-3xl border border-black/5 bg-white shadow-soft p-5 hover:translate-y-[-1px] transition"
       data-cat="${c}"
@@ -200,9 +210,11 @@ function montarCardsCategorias() {
       <div class="font-extrabold mt-2">${c}</div>
       <div class="text-sm text-slate-600 mt-1">Ver produtos</div>
     </button>
-  `).join("");
+  `
+    )
+    .join("");
 
-  $cats.querySelectorAll("button[data-cat]").forEach(btn => {
+  $cats.querySelectorAll("button[data-cat]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const cat = btn.getAttribute("data-cat");
       $categoria.value = cat;
@@ -216,9 +228,12 @@ function filtrarProdutos() {
   const termo = ($search.value || "").trim().toLowerCase();
   const cat = $categoria.value;
 
-  return PRODUTOS.filter(p => {
-    const okCat = (cat === "Todas") || (p.categoria === cat);
-    const okTermo = !termo || p.nome.toLowerCase().includes(termo) || p.sku.includes(termo);
+  return PRODUTOS.filter((p) => {
+    const okCat = cat === "Todas" || p.categoria === cat;
+    const okTermo =
+      !termo ||
+      p.nome.toLowerCase().includes(termo) ||
+      p.sku.includes(termo);
     return okCat && okTermo;
   });
 }
@@ -238,16 +253,25 @@ function renderGrid() {
   $grid.classList.remove("hidden");
   $empty.classList.add("hidden");
 
-  $grid.innerHTML = prods.map(p => {
-    const qtd = carrinho.get(p.sku)?.qtd || 0;
+  $grid.innerHTML = prods
+    .map((p) => {
+      const qtd = carrinho.get(p.sku)?.qtd || 0;
 
-    return `
+      // ✅ tenta JPG primeiro, se falhar tenta PNG, se falhar usa FALLBACK
+      const srcJpg = imgBySku(p.sku, "jpg");
+      const srcPng = imgBySku(p.sku, "png");
+
+      return `
       <div class="rounded-3xl bg-white border border-black/5 shadow-soft overflow-hidden">
         <img
-          src="${imgBySku(p.sku)}"
+          src="${srcJpg}"
           alt="${p.nome}"
           class="h-40 w-full object-cover bg-slate-100"
-          onerror="this.onerror=null; this.src='${FALLBACK_IMG}'"
+          data-try="jpg"
+          onerror="
+            if(this.dataset.try==='jpg'){ this.dataset.try='png'; this.src='${srcPng}'; }
+            else { this.onerror=null; this.src='${FALLBACK_IMG}'; }
+          "
         />
         <div class="p-5">
           <p class="text-xs text-slate-500">${p.categoria}</p>
@@ -267,12 +291,14 @@ function renderGrid() {
         </div>
       </div>
     `;
-  }).join("");
+    })
+    .join("");
 
-  $grid.querySelectorAll(".btnPlus").forEach(btn => {
+  // eventos +/-
+  $grid.querySelectorAll(".btnPlus").forEach((btn) => {
     btn.addEventListener("click", () => {
       const sku = btn.getAttribute("data-sku");
-      const prod = PRODUTOS.find(x => x.sku === sku);
+      const prod = PRODUTOS.find((x) => x.sku === sku);
       const atual = carrinho.get(sku)?.qtd || 0;
       carrinho.set(sku, { produto: prod, qtd: atual + 1 });
       renderLista();
@@ -280,7 +306,7 @@ function renderGrid() {
     });
   });
 
-  $grid.querySelectorAll(".btnMinus").forEach(btn => {
+  $grid.querySelectorAll(".btnMinus").forEach((btn) => {
     btn.addEventListener("click", () => {
       const sku = btn.getAttribute("data-sku");
       const atual = carrinho.get(sku)?.qtd || 0;
@@ -303,7 +329,9 @@ function renderLista() {
     return;
   }
 
-  $lista.innerHTML = itens.map(({ produto, qtd }) => `
+  $lista.innerHTML = itens
+    .map(
+      ({ produto, qtd }) => `
     <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border border-black/5 p-3">
       <div>
         <div class="font-semibold text-sm">${produto.nome}</div>
@@ -311,19 +339,25 @@ function renderLista() {
       </div>
       <div class="font-extrabold text-emerald-700">x${qtd}</div>
     </div>
-  `).join("");
+  `
+    )
+    .join("");
 }
 
 function montarMensagemWhats() {
   const itens = Array.from(carrinho.values());
   if (!itens.length) return "Olá! Quero fazer um pedido no Mercadinho Esperança.";
 
-  const linhas = itens.map(({ produto, qtd }) => `• ${produto.nome} (SKU ${produto.sku}) x${qtd}`);
+  const linhas = itens.map(
+    ({ produto, qtd }) => `• ${produto.nome} (SKU ${produto.sku}) x${qtd}`
+  );
 
   const obs = ($obs.value || "").trim();
   const extra = obs ? `\n\nObservações:\n${obs}` : "";
 
-  return `Olá! Quero fazer um pedido no Mercadinho Esperança:\n\n${linhas.join("\n")}${extra}`;
+  return `Olá! Quero fazer um pedido no Mercadinho Esperança:\n\n${linhas.join(
+    "\n"
+  )}${extra}`;
 }
 
 function render() {

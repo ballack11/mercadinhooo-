@@ -5,22 +5,10 @@ const WHATSAPP_NUMBER = "558183173613";
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1580915411954-282cb1b0d780?auto=format&fit=crop&w=900&q=70";
 
-// ✅ IMPORTANTE:
-// No GitHub Pages, quando o site fica em:
-// https://SEUUSUARIO.github.io/mercadinhooo-/
-//
-// o caminho correto precisa incluir "/mercadinhooo-/".
-// No seu PC (abrindo index.html local), esse BASE_PATH não existe.
-//
-// Por isso usamos um "BASE_PATH" automático:
-// - Em produção (GitHub Pages): "/mercadinhooo-/"
-// - Local (arquivo aberto no PC): ""
-const REPO_NAME = "mercadinhooo-";
-const BASE_PATH = location.hostname.includes("github.io") ? `/${REPO_NAME}/` : "";
+// ✅ BASE_PATH automático (funciona local e no GitHub Pages)
+const BASE_PATH = new URL("./", document.baseURI).pathname;
 
-// Imagens por SKU:
-// Coloque as imagens em: assets/images/SKU.jpg
-// Ex: assets/images/1001.jpg
+// Imagens por SKU
 function imgBySku(sku) {
   return `${BASE_PATH}assets/images/${sku}.jpg`;
 }
@@ -173,10 +161,10 @@ function waLink(texto) {
 
 function setAllZapLinks() {
   const link = waLink("Olá! Quero fazer um pedido no Mercadinho Esperança.");
-  if ($btnWhatsappTop) $btnWhatsappTop.href = link;
-  if ($btnWhatsappHero) $btnWhatsappHero.href = link;
-  if ($btnWhatsappFooter) $btnWhatsappFooter.href = link;
-  if ($floatZap) $floatZap.href = link;
+  $btnWhatsappTop.href = link;
+  $btnWhatsappHero.href = link;
+  $btnWhatsappFooter.href = link;
+  $floatZap.href = link;
 }
 
 function getCategorias() {
@@ -185,30 +173,25 @@ function getCategorias() {
 }
 
 function montarSelectCategorias() {
-  if (!$categoria) return;
   $categoria.innerHTML = getCategorias()
     .map(c => `<option value="${c}">${c}</option>`)
     .join("");
 }
 
 function montarCardsCategorias() {
-  if (!$cats) return;
-
   const cats = getCategorias().filter(c => c !== "Todas");
   const icons = {
-    Mercearia: "🛒",
-    Hortifruti: "🥬",
-    Limpeza: "🧼",
-    Higiene: "🧴",
-    Laticínios: "🥛",
-    Carnes: "🥩",
-    Congelados: "🧊",
-    Bebidas: "🍺",
+    "Mercearia": "🛒",
+    "Hortifruti": "🥬",
+    "Limpeza": "🧼",
+    "Higiene": "🧴",
+    "Laticínios": "🥛",
+    "Carnes": "🥩",
+    "Congelados": "🧊",
+    "Bebidas": "🍺",
   };
 
-  $cats.innerHTML = cats
-    .map(
-      c => `
+  $cats.innerHTML = cats.map(c => `
     <button
       class="text-left rounded-3xl border border-black/5 bg-white shadow-soft p-5 hover:translate-y-[-1px] transition"
       data-cat="${c}"
@@ -217,31 +200,25 @@ function montarCardsCategorias() {
       <div class="font-extrabold mt-2">${c}</div>
       <div class="text-sm text-slate-600 mt-1">Ver produtos</div>
     </button>
-  `
-    )
-    .join("");
+  `).join("");
 
   $cats.querySelectorAll("button[data-cat]").forEach(btn => {
     btn.addEventListener("click", () => {
       const cat = btn.getAttribute("data-cat");
-      if ($categoria) $categoria.value = cat;
+      $categoria.value = cat;
       render();
-      const el = document.getElementById("catalogo");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("catalogo").scrollIntoView({ behavior: "smooth" });
     });
   });
 }
 
 function filtrarProdutos() {
-  const termo = ($search?.value || "").trim().toLowerCase();
-  const cat = $categoria?.value || "Todas";
+  const termo = ($search.value || "").trim().toLowerCase();
+  const cat = $categoria.value;
 
   return PRODUTOS.filter(p => {
-    const okCat = cat === "Todas" || p.categoria === cat;
-    const okTermo =
-      !termo ||
-      p.nome.toLowerCase().includes(termo) ||
-      p.sku.includes(termo);
+    const okCat = (cat === "Todas") || (p.categoria === cat);
+    const okTermo = !termo || p.nome.toLowerCase().includes(termo) || p.sku.includes(termo);
     return okCat && okTermo;
   });
 }
@@ -250,8 +227,6 @@ function filtrarProdutos() {
 // RENDER
 // =========================
 function renderGrid() {
-  if (!$grid || !$empty) return;
-
   const prods = filtrarProdutos();
 
   if (!prods.length) {
@@ -263,11 +238,10 @@ function renderGrid() {
   $grid.classList.remove("hidden");
   $empty.classList.add("hidden");
 
-  $grid.innerHTML = prods
-    .map(p => {
-      const qtd = carrinho.get(p.sku)?.qtd || 0;
+  $grid.innerHTML = prods.map(p => {
+    const qtd = carrinho.get(p.sku)?.qtd || 0;
 
-      return `
+    return `
       <div class="rounded-3xl bg-white border border-black/5 shadow-soft overflow-hidden">
         <img
           src="${imgBySku(p.sku)}"
@@ -293,10 +267,8 @@ function renderGrid() {
         </div>
       </div>
     `;
-    })
-    .join("");
+  }).join("");
 
-  // eventos +/-
   $grid.querySelectorAll(".btnPlus").forEach(btn => {
     btn.addEventListener("click", () => {
       const sku = btn.getAttribute("data-sku");
@@ -324,8 +296,6 @@ function renderGrid() {
 }
 
 function renderLista() {
-  if (!$lista) return;
-
   const itens = Array.from(carrinho.values());
 
   if (!itens.length) {
@@ -333,9 +303,7 @@ function renderLista() {
     return;
   }
 
-  $lista.innerHTML = itens
-    .map(
-      ({ produto, qtd }) => `
+  $lista.innerHTML = itens.map(({ produto, qtd }) => `
     <div class="flex items-center justify-between gap-3 bg-white rounded-2xl border border-black/5 p-3">
       <div>
         <div class="font-semibold text-sm">${produto.nome}</div>
@@ -343,25 +311,19 @@ function renderLista() {
       </div>
       <div class="font-extrabold text-emerald-700">x${qtd}</div>
     </div>
-  `
-    )
-    .join("");
+  `).join("");
 }
 
 function montarMensagemWhats() {
   const itens = Array.from(carrinho.values());
   if (!itens.length) return "Olá! Quero fazer um pedido no Mercadinho Esperança.";
 
-  const linhas = itens.map(
-    ({ produto, qtd }) => `• ${produto.nome} (SKU ${produto.sku}) x${qtd}`
-  );
+  const linhas = itens.map(({ produto, qtd }) => `• ${produto.nome} (SKU ${produto.sku}) x${qtd}`);
 
-  const obs = ($obs?.value || "").trim();
+  const obs = ($obs.value || "").trim();
   const extra = obs ? `\n\nObservações:\n${obs}` : "";
 
-  return `Olá! Quero fazer um pedido no Mercadinho Esperança:\n\n${linhas.join(
-    "\n"
-  )}${extra}`;
+  return `Olá! Quero fazer um pedido no Mercadinho Esperança:\n\n${linhas.join("\n")}${extra}`;
 }
 
 function render() {
@@ -372,39 +334,31 @@ function render() {
 // =========================
 // ACTIONS
 // =========================
-if ($btnWhats) {
-  $btnWhats.addEventListener("click", () => {
-    const msg = montarMensagemWhats();
-    window.open(waLink(msg), "_blank");
-  });
-}
+$btnWhats.addEventListener("click", () => {
+  const msg = montarMensagemWhats();
+  window.open(waLink(msg), "_blank");
+});
 
-if ($btnClear) {
-  $btnClear.addEventListener("click", () => {
-    carrinho.clear();
-    if ($obs) $obs.value = "";
-    render();
-  });
-}
+$btnClear.addEventListener("click", () => {
+  carrinho.clear();
+  $obs.value = "";
+  render();
+});
 
-if ($btnCopy) {
-  $btnCopy.addEventListener("click", async () => {
-    const msg = montarMensagemWhats();
-    try {
-      await navigator.clipboard.writeText(msg);
-      $btnCopy.textContent = "Copiado!";
-      setTimeout(() => ($btnCopy.textContent = "Copiar lista"), 1200);
-    } catch {
-      alert(
-        "Não consegui copiar automaticamente. Vou mostrar a mensagem para você copiar."
-      );
-      prompt("Copie a mensagem do pedido:", msg);
-    }
-  });
-}
+$btnCopy.addEventListener("click", async () => {
+  const msg = montarMensagemWhats();
+  try {
+    await navigator.clipboard.writeText(msg);
+    $btnCopy.textContent = "Copiado!";
+    setTimeout(() => ($btnCopy.textContent = "Copiar lista"), 1200);
+  } catch {
+    alert("Não consegui copiar automaticamente. Vou mostrar a mensagem para você copiar.");
+    prompt("Copie a mensagem do pedido:", msg);
+  }
+});
 
-if ($search) $search.addEventListener("input", render);
-if ($categoria) $categoria.addEventListener("change", render);
+$search.addEventListener("input", render);
+$categoria.addEventListener("change", render);
 
 // =========================
 // INIT

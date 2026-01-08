@@ -21,7 +21,7 @@
       --line:rgba(148,163,184,.12);
 
       --green:#22c55e;
-      --green2:#16a34a;
+      --green2 Osborne:#16a34a;
 
       --red:#dc2626;
       --red2:#b91c1c;
@@ -181,129 +181,17 @@
       font-size:13px;
     }
 
-    /* ===== Layout ===== */
+    /* ===== Layout (SEM sidebar) ===== */
     .layout{
       display:grid;
-      grid-template-columns: 290px 1fr 330px;
+      grid-template-columns: 1fr 330px;
       gap:14px;
       padding:14px 0 22px;
       align-items:start;
     }
-    @media(max-width:1140px){
-      .layout{grid-template-columns: 290px 1fr}
-    }
     @media(max-width:980px){
       .layout{grid-template-columns: 1fr}
     }
-
-    /* ===== Sidebar esquerda ===== */
-    .sidebar{
-      position:sticky; top:148px;
-      border-radius:22px;
-      background:linear-gradient(180deg, rgba(15,23,42,.92), rgba(11,18,32,.92));
-      border:1px solid var(--line);
-      box-shadow:var(--shadow2);
-      overflow:hidden;
-    }
-    @media(max-width:980px){.sidebar{position:static}}
-
-    .sideHead{
-      padding:12px 14px;
-      border-bottom:1px solid var(--line);
-      display:flex;justify-content:space-between;align-items:center;
-    }
-    .sideHead b{font-size:13px}
-    .sideHead small{color:var(--muted);font-weight:800;font-size:12px}
-
-    .catList{padding:12px;display:grid;gap:10px}
-
-    /* ✅ ITEM DE CATEGORIA COM FOTO (igual seu print) */
-    .catItem{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      border-radius:18px;
-      overflow:hidden;
-      cursor:pointer;
-      transition:.12s transform,.12s box-shadow,.12s border;
-      position:relative;
-      min-height:84px;
-    }
-    .catItem:hover{
-      transform:translateY(-2px);
-      box-shadow:0 18px 40px rgba(0,0,0,.35);
-      border-color:rgba(34,197,94,.22);
-    }
-
-    .catCover{
-      position:absolute;
-      inset:0;
-      background-size:cover;
-      background-position:center;
-      filter:saturate(1.05);
-    }
-
-    .catOverlay{
-      position:absolute; inset:0;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.72), rgba(0,0,0,.18)),
-        radial-gradient(240px 120px at 75% 50%, rgba(34,197,94,.18), transparent 60%);
-    }
-
-    .catContent{
-      position:relative;
-      z-index:2;
-      height:100%;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:14px 14px;
-      gap:12px;
-    }
-
-    .catLeft{
-      display:flex; align-items:center; gap:10px;
-      font-weight:1000; color:#fff;
-      text-shadow:0 10px 22px rgba(0,0,0,.35);
-      font-size:13px;
-    }
-
-    .catIco{
-      width:30px;height:30px;border-radius:12px;
-      display:grid;place-items:center;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(10px);
-    }
-
-    .catCount{
-      padding:8px 12px;border-radius:999px;
-      background:rgba(34,197,94,.18);
-      border:1px solid rgba(34,197,94,.25);
-      font-size:12px;
-      color:#d1fae5;
-      font-weight:1000;
-      box-shadow:0 10px 22px rgba(0,0,0,.25);
-    }
-
-    .sideActions{
-      padding:12px 14px;
-      border-top:1px solid var(--line);
-      display:grid;gap:10px;
-    }
-    .sideActions .btnSide{
-      width:100%;
-      padding:11px 12px;
-      border-radius:14px;
-      font-weight:1000;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      cursor:pointer;
-      transition:.12s transform,.12s filter;
-    }
-    .sideActions .btnSide:hover{transform:translateY(-1px);filter:brightness(1.06)}
-    .sideActions .btnSide.red{background:rgba(220,38,38,.20);border-color:rgba(220,38,38,.26)}
-    .sideActions .btnSide.green{background:rgba(34,197,94,.18);border-color:rgba(34,197,94,.26)}
 
     /* ===== Main (centro) ===== */
     .main{display:grid;gap:12px;min-width:0}
@@ -645,7 +533,7 @@
       padding:14px;
       height:fit-content;
     }
-    @media(max-width:1140px){aside.cart{grid-column:1/-1; position:static}}
+    @media(max-width:980px){aside.cart{position:static}}
     .cartTop{display:flex;justify-content:space-between;align-items:center;gap:10px}
     .cartTop h3{margin:0;font-size:14px}
     .badgeCount{
@@ -788,19 +676,6 @@
 
 <main class="container">
   <div class="layout">
-
-    <!-- Sidebar -->
-    <aside class="sidebar" aria-label="Atalhos e categorias">
-      <div class="sideHead">
-        <b>Atalhos & Informações</b>
-        <small>Listas prontas</small>
-      </div>
-      <div class="catList" id="catList"></div>
-      <div class="sideActions">
-        <button class="btnSide green" id="btnZapSide">Chamar no WhatsApp</button>
-        <button class="btnSide red" id="btnCopySide">Copiar lista</button>
-      </div>
-    </aside>
 
     <!-- Centro -->
     <section class="main">
@@ -994,27 +869,12 @@
   window.onImgError = onImgError;
 
   // ============================
-  // Ícones + IMAGENS DE CATEGORIA
+  // Ícones (somente para chips do topo)
   // ============================
   const CAT_ICONS = {
     "Mercearia":"🛒","Massas":"🍝","Enlatados":"🥫","Temperos":"🧂","Biscoitos":"🍪",
     "Hortifruti":"🥬","Laticínios":"🥛","Carnes":"🥩","Congelados":"🧊",
     "Limpeza":"🧼","Higiene":"🧴","Bebidas":"🍺"
-  };
-
-  const CAT_IMAGES = {
-    "Mercearia":"https://images.unsplash.com/photo-1580915411954-282cb1b0d780?auto=format&fit=crop&w=1200&q=70",
-    "Massas":"https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642?auto=format&fit=crop&w=1200&q=70",
-    "Enlatados":"https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=1200&q=70",
-    "Biscoitos":"https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?auto=format&fit=crop&w=1200&q=70",
-    "Temperos":"https://images.unsplash.com/photo-1604908554027-3a741b93d7c6?auto=format&fit=crop&w=1200&q=70",
-    "Hortifruti":"https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=70",
-    "Laticínios":"https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=1200&q=70",
-    "Carnes":"https://images.unsplash.com/photo-1603048297172-c92544798d35?auto=format&fit=crop&w=1200&q=70",
-    "Congelados":"https://images.unsplash.com/photo-1585238342028-4a7f0fe6cb10?auto=format&fit=crop&w=1200&q=70",
-    "Limpeza":"https://images.unsplash.com/photo-1583947215259-38e31be8751f?auto=format&fit=crop&w=1200&q=70",
-    "Higiene":"https://images.unsplash.com/photo-1584305574647-0d9b4e6f8b12?auto=format&fit=crop&w=1200&q=70",
-    "Bebidas":"https://images.unsplash.com/photo-1514361892635-eae31f5f53d3?auto=format&fit=crop&w=1200&q=70"
   };
 
   // ============================
@@ -1238,16 +1098,13 @@
   const $empty = document.getElementById("empty");
   const $badgeCount = document.getElementById("badgeCount");
   const $totalEstimado = document.getElementById("totalEstimado");
-  const $catList = document.getElementById("catList");
   const $chipRow = document.getElementById("chipRow");
 
   const $topTotal = document.getElementById("topTotal");
   const $topSearch = document.getElementById("topSearch");
   const $topSearchBtn = document.getElementById("topSearchBtn");
 
-  const $btnZapSide = document.getElementById("btnZapSide");
   const $btnZapFooter = document.getElementById("btnZapFooter");
-  const $btnCopySide = document.getElementById("btnCopySide");
   const $floatZap = document.getElementById("floatZap");
 
   const $statusDot = document.getElementById("statusDot");
@@ -1275,7 +1132,6 @@
   function setZap(){
     const link = waLink("Olá! Quero fazer um pedido no Mercadinho Esperança.");
     $floatZap.href = link;
-    $btnZapSide.onclick = ()=> window.open(link, "_blank");
     $btnZapFooter.onclick = ()=> window.open(link, "_blank");
   }
 
@@ -1284,13 +1140,6 @@
   // ============================
   function categorias(){
     return ["Todas", ...Array.from(new Set(PRODUTOS.map(p => p.categoria)))];
-  }
-  function countByCategory(){
-    const map = new Map();
-    for (const p of PRODUTOS){
-      map.set(p.categoria, (map.get(p.categoria)||0) + 1);
-    }
-    return map;
   }
 
   function renderSelectCategorias(){
@@ -1311,36 +1160,6 @@
         activeChip = btn.dataset.cat;
         $categoria.value = activeChip;
         $chipRow.querySelectorAll(".chipBtn").forEach(b=>b.classList.toggle("active", b.dataset.cat===activeChip));
-        render();
-        document.getElementById("catalogo").scrollIntoView({behavior:"smooth"});
-      });
-    });
-  }
-
-  function renderSidebarCategorias(){
-    const counts = countByCategory();
-    const cats = categorias().filter(c => c !== "Todas");
-
-    $catList.innerHTML = cats.map(cat => `
-      <div class="catItem" data-cat="${cat}">
-        <div class="catCover" style="background-image:url('${CAT_IMAGES[cat] || FALLBACK_IMG}')"></div>
-        <div class="catOverlay"></div>
-        <div class="catContent">
-          <div class="catLeft">
-            <span class="catIco">${CAT_ICONS[cat] || "🏷️"}</span>
-            <span>${cat}</span>
-          </div>
-          <span class="catCount">${counts.get(cat) || 0}</span>
-        </div>
-      </div>
-    `).join("");
-
-    $catList.querySelectorAll(".catItem").forEach(el=>{
-      el.addEventListener("click", ()=>{
-        const cat = el.getAttribute("data-cat");
-        activeChip = cat;
-        $categoria.value = cat;
-        renderChipBar();
         render();
         document.getElementById("catalogo").scrollIntoView({behavior:"smooth"});
       });
@@ -1527,14 +1346,6 @@ ${obs}` : ""}`;
     }
   });
 
-  $btnCopySide.addEventListener("click", async ()=>{
-    const ok = await copyList();
-    if(ok){
-      $btnCopySide.textContent = "Copiado!";
-      setTimeout(()=> $btnCopySide.textContent="Copiar lista", 1200);
-    }
-  });
-
   $search.addEventListener("input", render);
   $categoria.addEventListener("change", ()=>{
     activeChip = $categoria.value;
@@ -1614,7 +1425,6 @@ ${obs}` : ""}`;
   // ============================
   setZap();
   renderSelectCategorias();
-  renderSidebarCategorias();
   renderChipBar();
   render();
   renderDots();
